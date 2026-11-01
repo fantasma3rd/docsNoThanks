@@ -1,3 +1,4 @@
+const FILE_SELECTOR = 'a[href*="drive.google.com/file/d/"]';
 const FILE_URL = /^https:\/\/drive\.google\.com\/file\/d\/([\w-]+)/;
 const DOWNLOAD_URL = "https://drive.usercontent.google.com/download";
 const MARK = "data-cqd";
@@ -39,4 +40,9 @@ function addButton(anchor: HTMLAnchorElement): void {
   btnElm.addEventListener("click", (event) => event.stopPropagation());
 
   anchor.after(btnElm);
+}
+
+function scan(): void {
+  const anchors = document.querySelectorAll(FILE_SELECTOR);
+  anchors.forEach(addButton());
 }
