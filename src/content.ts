@@ -43,8 +43,8 @@ function addButton(anchor: HTMLAnchorElement): void {
 }
 
 function scan(): void {
-  const anchors = document.querySelectorAll(FILE_SELECTOR);
-  anchors.forEach(addButton());
+  const anchors = document.querySelectorAll<HTMLAnchorElement>(FILE_SELECTOR);
+  anchors.forEach(addButton);
 }
 
 let timer: number = null;
