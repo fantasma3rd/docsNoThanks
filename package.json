@@ -1,10 +1,12 @@
 {
   "name": "docsnothanks",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Google Classroom attachments, downloaded in one click. No ceremonial trip through Docs required.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "typecheck": "tsc",
+    "bundle": "mkdir -p dist && cp -r public/* dist/ && esbuild src/content.ts --bundle --outfile=dist/content.js",
+    "build": "npm run typecheck && npm run bundle"
   },
   "keywords": [],
   "author": "fantasma",
