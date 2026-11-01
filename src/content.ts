@@ -47,7 +47,7 @@ function scan(): void {
   anchors.forEach(addButton);
 }
 
-let timer: number = null;
+let timer: number | undefined;
 new MutationObserver(() => {
   clearTimeout(timer);
   timer = setTimeout(scan, 200);
