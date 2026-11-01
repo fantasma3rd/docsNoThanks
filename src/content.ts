@@ -46,3 +46,11 @@ function scan(): void {
   const anchors = document.querySelectorAll(FILE_SELECTOR);
   anchors.forEach(addButton());
 }
+
+let timer: number = null;
+new MutationObserver(() => {
+  clearTimeout(timer);
+  timer = setTimeout(scan, 200);
+}).observe(document.body, {childList: true, subtree: true});
+
+scan();
