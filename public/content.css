@@ -1,0 +1,20 @@
+.dl-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 4px 0 0 8px;
+  padding: 6px 12px;
+  border: 1px solid #dadce0;
+  border-radius: 16px;
+  background: #fff;
+  color: #1a73e8;
+  font: 500 12px/1 "Google Sans", Roboto, Arial, sans-serif;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.dl-btn:hover {
+  background: #f1f6fe;
+  text-decoration: none;
+}
