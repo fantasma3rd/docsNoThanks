@@ -1,0 +1,38 @@
+name: Build and Release
+on:
+  push:
+    branches:
+      - main
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Prepare Node.js
+        uses: actions/setup-node@v4
+      - name: Install packages
+        run: npm ci
+      - name: Build web extention
+        run: npm run build
+      - name: Get version from manifest
+        id: get_version
+        run: |
+          VERSION=$(jq -r -e '.version' public/manifest.json)
+          if [ -z "$VERSION" ]; then
+            echo "::error::manifest.json からバージョンを取得できませんでした"
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+      - name: Create archive file
+        run: |
+          cd dist
+          zip -r ../docsNoThanks-v${{steps.get_version.outputs.version}}.zip .
+      - name: Create release
+        env:
+          GH_TOKEN: ${{github.token}}
+        run: |
+          gh release create "v${{steps.get_version.outputs.version}}" "docsNoThanks-v${{steps.get_version.outputs.version}}.zip" --title "docsNoThanks v${{steps.get_version.outputs.version}}" --generate-notes
