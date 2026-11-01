@@ -30,6 +30,7 @@ function addButton(anchor: HTMLAnchorElement): void {
   if (!fileUrl?.[1]) {
     return;
   }
+  anchor.setAttribute(MARK, "added");
 
   const btnElm = document.createElement("a");
   btnElm.className = "dl-btn";
