@@ -5,13 +5,13 @@ const DOWNLOAD_URL = "https://drive.usercontent.google.com/download";
 const MARK = "data-cqd";
 
 interface DownloadInfo {
-  id: string;
+  fileId: string;
   authUser: string;
-};
+}
 
 function getAuthUserFromHref (anchor: HTMLAnchorElement): string | null {
   const userHref = new URL(anchor.href).searchParams.get("authuser");
-  return userHref ?? null;
+  return userHref;
 }
 
 function getAuthUserFromPath (): string {
@@ -20,13 +20,13 @@ function getAuthUserFromPath (): string {
 }
 
 function parseAttachLink(anchor: HTMLAnchorElement): DownloadInfo | null {
-  const fileHref = anchor.href.match(FILE_PATH);
-  const authUser = getAuthUserFromHref(anchor) ?? getAuthUserFromPath();
-  
-  if (!fileHref?.[1]) {
+  const fileId = anchor.href.match(FILE_URL)?.[1];
+  if (!fileId) {
     return null;
   }
-  return {id: fileHref[1], authUser}
+  const authUser = getAuthUserFromHref(anchor) ?? getAuthUserFromPath();
+  
+  return {fileId, authUser};
 }
 
 function createIcon(): SVGSVGElement {
@@ -49,6 +49,18 @@ function createDownloadUrl(fileId: string, authUser: string): string {
   downloadUrl.searchParams.set("export", "download");
   downloadUrl.searchParams.set("authuser", authUser);
   return downloadUrl.toString();
+}
+
+function createButton(className: string, target: DownloadInfo): HTMLAnchorElement {
+  const btnElm = document.createElement("a");
+  btnElm.className = className;
+  btnElm.href = createDownloadUrl(target.fileId, target.authUser);
+  btnElm.target = "_blank";
+  btnElm.rel = "noopener";
+  btnElm.appendChild(createIcon());
+  btnElm.addEventListener("click", (event) => event.stopPropagation());
+
+  return btnElm;
 }
 
 function addButton(anchor: HTMLAnchorElement): void {
