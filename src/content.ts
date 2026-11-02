@@ -29,6 +29,20 @@ function parseAttachLink(anchor: HTMLAnchorElement): DownloadInfo | null {
   return {id: fileHref[1], authUser}
 }
 
+function createIcon(): SVGSVGElement {
+  const NS = "http://www.w3.org/2000/svg";
+  const svgElm = document.createElementNS(NS, "svg");
+  svgElm.setAttribute("viewBox", "0 0 24 24");
+  svgElm.setAttribute("aria-hidden", "true");
+  svgElm.setAttribute("focusable", "false");
+  const pathElm = document.createElementNS(NS, "path");
+  pathElm.setAttribute("d", "M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z");
+  pathElm.setAttribute("fill", "currentColor");
+  svgElm.appendChild(pathElm);
+
+  return svgElm;
+}
+
 function createDownloadUrl(fileId: string, authUser: string): string {
   const downloadUrl = new URL(DOWNLOAD_URL);
   downloadUrl.searchParams.set("id", fileId);
