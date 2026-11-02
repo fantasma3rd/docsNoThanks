@@ -1,16 +1,32 @@
 const FILE_SELECTOR = 'a[href*="drive.google.com/file/d/"]';
 const FILE_URL = /^https:\/\/drive\.google\.com\/file\/d\/([\w-]+)/;
+const FILE_PATH = /\/file\/d\/([\w-]+)/;
 const DOWNLOAD_URL = "https://drive.usercontent.google.com/download";
 const MARK = "data-cqd";
 
-function getAuthUser (anchor: HTMLAnchorElement): string {
-  const userHref = new URL(anchor.href).searchParams.get("authuser");
-  if (userHref !== null) {
-      return userHref;
-  }
+interface DownloadInfo {
+  id: string;
+  authUser: string;
+};
 
+function getAuthUserFromHref (anchor: HTMLAnchorElement): string | null {
+  const userHref = new URL(anchor.href).searchParams.get("authuser");
+  return userHref ?? null;
+}
+
+function getAuthUserFromPath (): string {
   const userUrl = location.pathname.match(/^\/u\/(\d+)\//);
   return userUrl?.[1] ?? "0";
+}
+
+function parseAttachLink(anchor: HTMLAnchorElement): DownloadInfo | null {
+  const fileHref = anchor.href.match(FILE_PATH);
+  const authUser = getAuthUserFromHref(anchor) ?? getAuthUserFromPath();
+  
+  if (!fileHref?.[1]) {
+    return null;
+  }
+  return {id: fileHref[1], authUser}
 }
 
 function createDownloadUrl(fileId: string, authUser: string): string {
