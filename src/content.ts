@@ -1,5 +1,6 @@
 import { type DownloadInfo, createDownloadUrl, isValidId, isValidAuthuser, state } from "./shared";
 
+const VIEWER_ORIGIN = "https://drive.google.com";
 const FILE_SELECTOR = 'a[href*="drive.google.com/file/d/"]';
 const FILE_URL = /^https:\/\/drive\.google\.com\/file\/d\/([\w-]+)/;
 const FILE_PATH = /\/file\/d\/([\w-]+)/;
