@@ -14,3 +14,7 @@ export function createDownloadUrl(fileId: string, authUser: string): string {
   downloadUrl.searchParams.set("authuser", authUser);
   return downloadUrl.toString();
 }
+
+export function isValidId(str: unknown): str is string {
+  return typeof str === "string" && /^[\w-]+$/.test(str);
+}
