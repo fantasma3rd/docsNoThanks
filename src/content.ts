@@ -3,7 +3,6 @@ const FILE_URL = /^https:\/\/drive\.google\.com\/file\/d\/([\w-]+)/;
 const FILE_PATH = /\/file\/d\/([\w-]+)/;
 const USER_PATH = /^\/u\/(\d+)\//;
 const DOWNLOAD_URL = "https://drive.usercontent.google.com/download";
-const MARK = "data-cqd";
 
 const cardButtonsMap = new WeakMap<HTMLAnchorElement, HTMLAnchorElement>();
 let lastOpened: DownloadInfo | null = null;
