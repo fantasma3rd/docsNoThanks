@@ -92,18 +92,20 @@ function findViewerFrame(): HTMLIFrameElement | null {
   return null;
 }
 
-function resolveViewerTarget(frame: HTMLIFrameElement): DownloadInfo | null {
+function resolveTarget(frame: HTMLIFrameElement | undefined): DownloadInfo | null {
   let url: URL | null = null;
-  try {
-    url = new URL(frame.src, location.href);
-  } catch (_) {}
-
+  if (frame) {
+    try {
+      url = new URL(frame.src, location.href);
+    } catch (_) {}
+  }
   const fileId = url?.pathname.match(FILE_PATH)?.[1] ?? state.lastOpened?.fileId;
   if (!fileId) {
     return null;
   }
-  const authUser = getAuthUserFromHref(frame.src)  ?? state.lastOpened?.authUser ?? getAuthUserFromPath();
 
+  const hrefUser = frame ? getAuthUserFromHref(frame.src) : null;
+  const authUser = isValidAuthuser(hrefUser) ? hrefUser : state.lastOpened?.authUser ?? getAuthUserFromPath();
   return {fileId, authUser};
 }
 
