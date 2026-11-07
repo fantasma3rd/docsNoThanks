@@ -4,6 +4,8 @@ const FILE_PATH = /\/file\/d\/([\w-]+)/;
 const DOWNLOAD_URL = "https://drive.usercontent.google.com/download";
 const MARK = "data-cqd";
 
+const cardButtonsMap = new WeakMap();
+
 interface DownloadInfo {
   fileId: string;
   authUser: string;
@@ -63,26 +65,29 @@ function createButton(className: string, target: DownloadInfo): HTMLAnchorElemen
   return btnElm;
 }
 
-function addButton(anchor: HTMLAnchorElement): void {
-  if (anchor.hasAttribute(MARK)) {
+function addCardButton(anchor: HTMLAnchorElement): void {
+  const exist = cardButtonsMap.get(anchor);
+  if (exist && exist.isConnected) {
     return;
   }
 
-  const fileUrl = anchor.href.match(FILE_URL);
-  if (!fileUrl?.[1]) {
+  const target = parseAttachLink(anchor);
+  const host = anchor.parentElement;
+  if (!target || !host) {
     return;
   }
-  anchor.setAttribute(MARK, "added");
 
-  const btnElm = document.createElement("a");
-  btnElm.className = "dl-btn";
-  btnElm.textContent = "Download";
-  btnElm.href = createDownloadUrl(fileUrl[1], getAuthUser(anchor));
-  btnElm.target = "_blank";
-  btnElm.rel = "noopener";
-  btnElm.addEventListener("click", (event) => event.stopPropagation());
+  const btnElm = createButton("cqd-card-btn", target);
 
-  anchor.after(btnElm);
+  if (host.querySelectorAll(FILE_SELECTOR).length === 1) {
+    host.classList.add("cqd-host");
+    btnElm.classList.add("cqd-card-btn--overlay");
+    host.appendChild(btnElm);
+  } else {
+    anchor.after(btnElm);
+  }
+
+  cardButtonsMap.set(anchor, btnElm);
 }
 
 function scan(): void {
