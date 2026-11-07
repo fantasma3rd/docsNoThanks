@@ -1,10 +1,11 @@
+import { type DownloadInfo, createDownloadUrl, state } from "./shared";
+
 const FILE_SELECTOR = 'a[href*="drive.google.com/file/d/"]';
 const FILE_URL = /^https:\/\/drive\.google\.com\/file\/d\/([\w-]+)/;
 const FILE_PATH = /\/file\/d\/([\w-]+)/;
 const USER_PATH = /^\/u\/(\d+)\//;
 
 const cardButtonsMap = new WeakMap<HTMLAnchorElement, HTMLAnchorElement>();
-let lastOpened: DownloadInfo | null = null;
 let viewerBtnElm: HTMLAnchorElement | null = null;
 
 function getAuthUserFromHref (href: string): string | null {
@@ -97,11 +98,11 @@ function resolveViewerTarget(frame: HTMLIFrameElement): DownloadInfo | null {
     url = new URL(frame.src, location.href);
   } catch (_) {}
 
-  const fileId = url?.pathname.match(FILE_PATH)?.[1] ?? lastOpened?.fileId;
+  const fileId = url?.pathname.match(FILE_PATH)?.[1] ?? state.lastOpened?.fileId;
   if (!fileId) {
     return null;
   }
-  const authUser = getAuthUserFromHref(frame.src)  ?? lastOpened?.authUser ?? getAuthUserFromPath();
+  const authUser = getAuthUserFromHref(frame.src)  ?? state.lastOpened?.authUser ?? getAuthUserFromPath();
 
   return {fileId, authUser};
 }
@@ -133,7 +134,7 @@ document.addEventListener("click", (event) => {
   const attachment = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>(FILE_SELECTOR) : null;
   const tabOpened = attachment && parseAttachLink(attachment);
   if (tabOpened) {
-    lastOpened = tabOpened;
+    state.lastOpened = tabOpened;
   }
 }, true);
 
