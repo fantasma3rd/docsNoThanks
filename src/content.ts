@@ -101,6 +101,30 @@ function findViewerFrame(): HTMLIFrameElement | null {
   return null;
 }
 
+function resolveViewerTarget(frame: HTMLIFrameElement): DownloadInfo | null {
+  let fileId: string | null = null;
+  let authUser: string | null = null;
+
+  try {
+    const url = new URL(frame.src, location.href);
+    const id = url.pathname.match(FILE_PATH)?.[1];
+    if (id) {
+      fileId = id;
+    }
+    authUser = url.searchParams.get("authuser");
+  } catch (_) {}
+
+  if (!fileId && lastOpened) {
+    fileId = lastOpened.fileId;
+    authUser = authUser ?? lastOpened.authUser;
+  }
+  if (!fileId) {
+    return null;
+  }
+
+  return {fileId, authUser: authUser ?? getAuthUserFromPath()};
+}
+
 document.addEventListener("click", (event) => {
   const attachment = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>(FILE_SELECTOR) : null;
   const tabOpened = attachment && parseAttachLink(attachment);
