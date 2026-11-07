@@ -1,4 +1,4 @@
-import { type DownloadInfo, createDownloadUrl, state } from "./shared";
+import { type DownloadInfo, createDownloadUrl, isValidId, isValidAuthuser, state } from "./shared";
 
 const FILE_SELECTOR = 'a[href*="drive.google.com/file/d/"]';
 const FILE_URL = /^https:\/\/drive\.google\.com\/file\/d\/([\w-]+)/;
