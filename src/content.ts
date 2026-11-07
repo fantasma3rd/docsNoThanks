@@ -1,4 +1,4 @@
-import { type DownloadInfo, createDownloadUrl, isValidId, isValidAuthuser, state } from "./shared";
+import { type DownloadInfo, createDownloadUrl, isValidAuthuser, state } from "./shared";
 
 const VIEWER_ORIGIN = "https://drive.google.com";
 const FILE_SELECTOR = 'a[href*="drive.google.com/file/d/"]';
