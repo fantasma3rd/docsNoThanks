@@ -107,6 +107,22 @@ document.addEventListener("click", (event) => {
   }
 }, true);
 
+window.addEventListener("message", (event) => {
+  if (event.origin !== VIEWER_ORIGIN) {
+    return;
+  }
+  if (!event.data || event.data.type !== "dnt:ready") {
+    return;
+  }
+
+  const frame = Array.from(document.querySelectorAll("iframe")).find((frm) => frm.contentWindow === event.source);
+  const target = resolveTarget(frame);
+  if (!target) {
+    return;
+  }
+  event.source?.postMessage({ type: "dnt:target", fileId: target.fileId, authUser: target.authUser }, { targetOrigin: event.origin});
+});
+
 function scan(): void {
   const anchors = document.querySelectorAll<HTMLAnchorElement>(FILE_SELECTOR);
   anchors.forEach(addCardButton);
