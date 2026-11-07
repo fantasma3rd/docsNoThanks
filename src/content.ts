@@ -160,10 +160,12 @@ function scan(): void {
 }
 
 let timer: number | undefined;
-const schedule: () => void = () => {
+
+function schedule(): void {
   clearTimeout(timer);
   timer = setTimeout(scan, 200);
-};
+}
+
 new MutationObserver(schedule).observe(document.body, {childList: true, subtree: true});
 addEventListener("resize", schedule);
 
