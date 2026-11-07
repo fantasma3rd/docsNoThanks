@@ -7,6 +7,7 @@ const MARK = "data-cqd";
 
 const cardButtonsMap = new WeakMap<HTMLAnchorElement, HTMLAnchorElement>();
 let lastOpened: DownloadInfo | null = null;
+let viewerBtnElm: HTMLAnchorElement | null = null;
 
 interface DownloadInfo {
   fileId: string;
@@ -115,6 +116,28 @@ function resolveViewerTarget(frame: HTMLIFrameElement): DownloadInfo | null {
   const authUser = getAuthUserFromHref(frame.src)  ?? lastOpened?.authUser ?? getAuthUserFromPath();
 
   return {fileId, authUser};
+}
+
+function updateViewerButton(): void {
+  if (viewerBtnElm && !viewerBtnElm.isConnected) {
+    viewerBtnElm = null;
+  }
+
+  const frame = findViewerFrame();
+  const target = frame ? resolveViewerTarget(frame);
+
+  if (!target && viewerBtnElm) {
+    viewerBtnElm.remove();
+    viewerBtnElm = null;
+  }
+
+  const downloadUrl = createDownloadUrl(target.id, target.authuser);
+  if (!viewerBtnElm) {
+    viewerBtnElm = createButton("cqd-viewer-btn", target);
+    document.body.appendChild(viewerBtnElm);
+  } else if (viewerBtnElm.getAttribute("href") !== downloadUrl) {
+    viewerBtnElm.setAttribute("href", downloadUrl);
+  }
 }
 
 document.addEventListener("click", (event) => {
