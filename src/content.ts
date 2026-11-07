@@ -6,7 +6,7 @@ const DOWNLOAD_URL = "https://drive.usercontent.google.com/download";
 const MARK = "data-cqd";
 
 const cardButtonsMap = new WeakMap<HTMLAnchorElement, HTMLAnchorElement>();
-let lastOpened: DownloadInfo;
+let lastOpened: DownloadInfo | null = null;
 
 interface DownloadInfo {
   fileId: string;
@@ -103,27 +103,18 @@ function findViewerFrame(): HTMLIFrameElement | null {
 }
 
 function resolveViewerTarget(frame: HTMLIFrameElement): DownloadInfo | null {
-  let fileId: string | null = null;
-  let authUser: string | null = null;
-
+  let url: URL | null = null;
   try {
-    const url = new URL(frame.src, location.href);
-    const id = url.pathname.match(FILE_PATH)?.[1];
-    if (id) {
-      fileId = id;
-    }
-    authUser = url.searchParams.get("authuser");
+    url = new URL(frame.src, location.href);
   } catch (_) {}
 
-  if (!fileId && lastOpened) {
-    fileId = lastOpened.fileId;
-    authUser = authUser ?? lastOpened.authUser;
-  }
+  const fileId = url?.pathname.match(FILE_PATH)?.[1] ?? lastOpened?.fileId;
   if (!fileId) {
     return null;
   }
+  const authUser = url?.searchParams.get("authuser")  ?? lastOpened?.authUser ?? getAuthUserFromPath();
 
-  return {fileId, authUser: authUser ?? getAuthUserFromPath()};
+  return {fileId, authUser};
 }
 
 document.addEventListener("click", (event) => {
