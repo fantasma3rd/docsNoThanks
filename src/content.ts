@@ -124,14 +124,15 @@ function updateViewerButton(): void {
   }
 
   const frame = findViewerFrame();
-  const target = frame ? resolveViewerTarget(frame);
+  const target = frame ? resolveViewerTarget(frame) : null;
 
-  if (!target && viewerBtnElm) {
-    viewerBtnElm.remove();
+  if (!target) {
+    viewerBtnElm?.remove();
     viewerBtnElm = null;
+    return;
   }
 
-  const downloadUrl = createDownloadUrl(target.id, target.authuser);
+  const downloadUrl = createDownloadUrl(target.fileId, target.authUser);
   if (!viewerBtnElm) {
     viewerBtnElm = createButton("cqd-viewer-btn", target);
     document.body.appendChild(viewerBtnElm);
