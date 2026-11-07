@@ -13,8 +13,8 @@ interface DownloadInfo {
   authUser: string;
 }
 
-function getAuthUserFromHref (anchor: HTMLAnchorElement): string | null {
-  const userHref = new URL(anchor.href).searchParams.get("authuser");
+function getAuthUserFromHref (href: string): string | null {
+  const userHref = new URL(href, location.href).searchParams.get("authuser");
   return userHref;
 }
 
@@ -28,7 +28,7 @@ function parseAttachLink(anchor: HTMLAnchorElement): DownloadInfo | null {
   if (!fileId) {
     return null;
   }
-  const authUser = getAuthUserFromHref(anchor) ?? getAuthUserFromPath();
+  const authUser = getAuthUserFromHref(anchor.href) ?? getAuthUserFromPath();
   
   return {fileId, authUser};
 }
@@ -112,7 +112,7 @@ function resolveViewerTarget(frame: HTMLIFrameElement): DownloadInfo | null {
   if (!fileId) {
     return null;
   }
-  const authUser = url?.searchParams.get("authuser")  ?? lastOpened?.authUser ?? getAuthUserFromPath();
+  const authUser = getAuthUserFromHref(frame.src)  ?? lastOpened?.authUser ?? getAuthUserFromPath();
 
   return {fileId, authUser};
 }
