@@ -91,6 +91,16 @@ function addCardButton(anchor: HTMLAnchorElement): void {
   cardButtonsMap.set(anchor, btnElm);
 }
 
+function findViewerFrame(): HTMLIFrameElement | null {
+  for (const frame of document.querySelectorAll("iframe")) {
+    const rect = frame.getBoundingClientRect();
+    if (rect.width >= innerWidth * 0.9 && rect.height >= innerHeight * 0.8) {
+      return frame;
+    }
+  }
+  return null;
+}
+
 document.addEventListener("click", (event) => {
   const attachment = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>(FILE_SELECTOR) : null;
   const tabOpened = attachment && parseAttachLink(attachment);
