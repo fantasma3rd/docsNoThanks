@@ -18,3 +18,7 @@ export function createDownloadUrl(fileId: string, authUser: string): string {
 export function isValidId(str: unknown): str is string {
   return typeof str === "string" && /^[\w-]+$/.test(str);
 }
+
+export function isValidAuthuser(str: unknown): str is string {
+  return typeof str === "string" && /^\d{1,2}$/.test(str);
+}
