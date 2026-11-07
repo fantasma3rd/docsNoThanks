@@ -6,7 +6,6 @@ const FILE_PATH = /\/file\/d\/([\w-]+)/;
 const USER_PATH = /^\/u\/(\d+)\//;
 
 const cardButtonsMap = new WeakMap<HTMLAnchorElement, HTMLAnchorElement>();
-let viewerBtnElm: HTMLAnchorElement | null = null;
 
 function getAuthUserFromHref (href: string): string | null {
   let userHref: string | null = null;
@@ -82,16 +81,6 @@ function addCardButton(anchor: HTMLAnchorElement): void {
   cardButtonsMap.set(anchor, btnElm);
 }
 
-function findViewerFrame(): HTMLIFrameElement | null {
-  for (const frame of document.querySelectorAll("iframe")) {
-    const rect = frame.getBoundingClientRect();
-    if (rect.width >= innerWidth * 0.9 && rect.height >= innerHeight * 0.8) {
-      return frame;
-    }
-  }
-  return null;
-}
-
 function resolveTarget(frame: HTMLIFrameElement | undefined): DownloadInfo | null {
   let url: URL | null = null;
   if (frame) {
@@ -107,29 +96,6 @@ function resolveTarget(frame: HTMLIFrameElement | undefined): DownloadInfo | nul
   const hrefUser = frame ? getAuthUserFromHref(frame.src) : null;
   const authUser = isValidAuthuser(hrefUser) ? hrefUser : state.lastOpened?.authUser ?? getAuthUserFromPath();
   return {fileId, authUser};
-}
-
-function updateViewerButton(): void {
-  if (viewerBtnElm && !viewerBtnElm.isConnected) {
-    viewerBtnElm = null;
-  }
-
-  const frame = findViewerFrame();
-  const target = frame ? resolveViewerTarget(frame) : null;
-
-  if (!target) {
-    viewerBtnElm?.remove();
-    viewerBtnElm = null;
-    return;
-  }
-
-  const downloadUrl = createDownloadUrl(target.fileId, target.authUser);
-  if (!viewerBtnElm) {
-    viewerBtnElm = createButton("dnt-viewer-btn", target);
-    document.body.appendChild(viewerBtnElm);
-  } else if (viewerBtnElm.getAttribute("href") !== downloadUrl) {
-    viewerBtnElm.setAttribute("href", downloadUrl);
-  }
 }
 
 document.addEventListener("click", (event) => {
@@ -153,6 +119,5 @@ function schedule(): void {
 }
 
 new MutationObserver(schedule).observe(document.body, {childList: true, subtree: true});
-window.addEventListener("resize", schedule);
 
 scan();
