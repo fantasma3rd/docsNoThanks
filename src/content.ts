@@ -5,6 +5,7 @@ const DOWNLOAD_URL = "https://drive.usercontent.google.com/download";
 const MARK = "data-cqd";
 
 const cardButtonsMap = new WeakMap();
+let lastOpened: DownloadInfo;
 
 interface DownloadInfo {
   fileId: string;
@@ -89,6 +90,14 @@ function addCardButton(anchor: HTMLAnchorElement): void {
 
   cardButtonsMap.set(anchor, btnElm);
 }
+
+document.addEventListener("click", (event) => {
+  const attachment = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>(FILE_SELECTOR) : null;
+  const tabOpened = attachment && parseAttachLink(attachment);
+  if (tabOpened) {
+    lastOpened = tabOpened;
+  }
+}, true);
 
 function scan(): void {
   const anchors = document.querySelectorAll<HTMLAnchorElement>(FILE_SELECTOR);
