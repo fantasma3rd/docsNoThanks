@@ -167,6 +167,6 @@ function schedule(): void {
 }
 
 new MutationObserver(schedule).observe(document.body, {childList: true, subtree: true});
-addEventListener("resize", schedule);
+window.addEventListener("resize", schedule);
 
 scan();
