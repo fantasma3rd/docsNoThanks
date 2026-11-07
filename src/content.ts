@@ -141,9 +141,6 @@ document.addEventListener("click", (event) => {
 function scan(): void {
   const anchors = document.querySelectorAll<HTMLAnchorElement>(FILE_SELECTOR);
   anchors.forEach(addCardButton);
-  try {
-    updateViewerButton();
-  } catch (_) {}
 }
 
 let timer: number | undefined;
