@@ -2,7 +2,6 @@ const FILE_SELECTOR = 'a[href*="drive.google.com/file/d/"]';
 const FILE_URL = /^https:\/\/drive\.google\.com\/file\/d\/([\w-]+)/;
 const FILE_PATH = /\/file\/d\/([\w-]+)/;
 const USER_PATH = /^\/u\/(\d+)\//;
-const DOWNLOAD_URL = "https://drive.usercontent.google.com/download";
 
 const cardButtonsMap = new WeakMap<HTMLAnchorElement, HTMLAnchorElement>();
 let lastOpened: DownloadInfo | null = null;
@@ -48,14 +47,6 @@ function createIcon(): SVGSVGElement {
   svgElm.appendChild(pathElm);
 
   return svgElm;
-}
-
-function createDownloadUrl(fileId: string, authUser: string): string {
-  const downloadUrl = new URL(DOWNLOAD_URL);
-  downloadUrl.searchParams.set("id", fileId);
-  downloadUrl.searchParams.set("export", "download");
-  downloadUrl.searchParams.set("authuser", authUser);
-  return downloadUrl.toString();
 }
 
 function createButton(className: string, target: DownloadInfo): HTMLAnchorElement {
