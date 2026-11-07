@@ -82,11 +82,11 @@ function addCardButton(anchor: HTMLAnchorElement): void {
     return;
   }
 
-  const btnElm = createButton("cqd-card-btn", target);
+  const btnElm = createButton("dnt-card-btn", target);
 
   if (host.querySelectorAll(FILE_SELECTOR).length === 1) {
-    host.classList.add("cqd-host");
-    btnElm.classList.add("cqd-card-btn--overlay");
+    host.classList.add("dnt-host");
+    btnElm.classList.add("dnt-card-btn--overlay");
     host.appendChild(btnElm);
   } else {
     anchor.after(btnElm);
@@ -136,7 +136,7 @@ function updateViewerButton(): void {
 
   const downloadUrl = createDownloadUrl(target.fileId, target.authUser);
   if (!viewerBtnElm) {
-    viewerBtnElm = createButton("cqd-viewer-btn", target);
+    viewerBtnElm = createButton("dnt-viewer-btn", target);
     document.body.appendChild(viewerBtnElm);
   } else if (viewerBtnElm.getAttribute("href") !== downloadUrl) {
     viewerBtnElm.setAttribute("href", downloadUrl);
