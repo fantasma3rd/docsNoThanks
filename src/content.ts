@@ -150,13 +150,18 @@ document.addEventListener("click", (event) => {
 
 function scan(): void {
   const anchors = document.querySelectorAll<HTMLAnchorElement>(FILE_SELECTOR);
-  anchors.forEach(addButton);
+  anchors.forEach(addCardButton);
+  try {
+    updateViewerButton();
+  } catch (_) {}
 }
 
 let timer: number | undefined;
-new MutationObserver(() => {
+const schedule: () => void = () => {
   clearTimeout(timer);
   timer = setTimeout(scan, 200);
-}).observe(document.body, {childList: true, subtree: true});
+};
+new MutationObserver(schedule).observe(document.body, {childList: true, subtree: true});
+addEventListener("resize", schedule);
 
 scan();
