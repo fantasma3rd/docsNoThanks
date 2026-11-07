@@ -1,6 +1,6 @@
 const DOWNLOAD_URL = "https://drive.usercontent.google.com/download";
 
-export const state = { lastOpened: null };
+export const state: { lastOpened: DownloadInfo | null } = { lastOpened: null };
 
 export interface DownloadInfo {
   fileId: string;
