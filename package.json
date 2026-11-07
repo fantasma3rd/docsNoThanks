@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "typecheck": "tsc",
-    "bundle": "mkdir -p dist && cp -r public/* dist/ && esbuild src/content.ts --bundle --outfile=dist/content.js",
+    "bundle": "mkdir -p dist && cp -r public/* dist/ && esbuild src/content.ts src/viewer.ts --bundle --outdir=dist",
     "build": "npm run typecheck && npm run bundle"
   },
   "keywords": [],
