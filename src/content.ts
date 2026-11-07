@@ -1,16 +1,53 @@
 const FILE_SELECTOR = 'a[href*="drive.google.com/file/d/"]';
 const FILE_URL = /^https:\/\/drive\.google\.com\/file\/d\/([\w-]+)/;
+const FILE_PATH = /\/file\/d\/([\w-]+)/;
+const USER_PATH = /^\/u\/(\d+)\//;
 const DOWNLOAD_URL = "https://drive.usercontent.google.com/download";
-const MARK = "data-cqd";
 
-function getAuthUser (anchor: HTMLAnchorElement): string {
-  const userHref = new URL(anchor.href).searchParams.get("authuser");
-  if (userHref !== null) {
-      return userHref;
-  }
+const cardButtonsMap = new WeakMap<HTMLAnchorElement, HTMLAnchorElement>();
+let lastOpened: DownloadInfo | null = null;
+let viewerBtnElm: HTMLAnchorElement | null = null;
 
-  const userUrl = location.pathname.match(/^\/u\/(\d+)\//);
+interface DownloadInfo {
+  fileId: string;
+  authUser: string;
+}
+
+function getAuthUserFromHref (href: string): string | null {
+  let userHref: string | null = null;
+  try {
+    userHref = new URL(href, location.href).searchParams.get("authuser");
+  } catch (_) {};
+  return userHref;
+}
+
+function getAuthUserFromPath (): string {
+  const userUrl = location.pathname.match(USER_PATH);
   return userUrl?.[1] ?? "0";
+}
+
+function parseAttachLink(anchor: HTMLAnchorElement): DownloadInfo | null {
+  const fileId = anchor.href.match(FILE_URL)?.[1];
+  if (!fileId) {
+    return null;
+  }
+  const authUser = getAuthUserFromHref(anchor.href) ?? getAuthUserFromPath();
+  
+  return {fileId, authUser};
+}
+
+function createIcon(): SVGSVGElement {
+  const NS = "http://www.w3.org/2000/svg";
+  const svgElm = document.createElementNS(NS, "svg");
+  svgElm.setAttribute("viewBox", "0 0 24 24");
+  svgElm.setAttribute("aria-hidden", "true");
+  svgElm.setAttribute("focusable", "false");
+  const pathElm = document.createElementNS(NS, "path");
+  pathElm.setAttribute("d", "M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z");
+  pathElm.setAttribute("fill", "currentColor");
+  svgElm.appendChild(pathElm);
+
+  return svgElm;
 }
 
 function createDownloadUrl(fileId: string, authUser: string): string {
@@ -21,37 +58,115 @@ function createDownloadUrl(fileId: string, authUser: string): string {
   return downloadUrl.toString();
 }
 
-function addButton(anchor: HTMLAnchorElement): void {
-  if (anchor.hasAttribute(MARK)) {
-    return;
-  }
-
-  const fileUrl = anchor.href.match(FILE_URL);
-  if (!fileUrl?.[1]) {
-    return;
-  }
-  anchor.setAttribute(MARK, "added");
-
+function createButton(className: string, target: DownloadInfo): HTMLAnchorElement {
   const btnElm = document.createElement("a");
-  btnElm.className = "dl-btn";
-  btnElm.textContent = "Download";
-  btnElm.href = createDownloadUrl(fileUrl[1], getAuthUser(anchor));
+  btnElm.className = className;
+  btnElm.href = createDownloadUrl(target.fileId, target.authUser);
   btnElm.target = "_blank";
   btnElm.rel = "noopener";
+  btnElm.appendChild(createIcon());
   btnElm.addEventListener("click", (event) => event.stopPropagation());
 
-  anchor.after(btnElm);
+  return btnElm;
 }
+
+function addCardButton(anchor: HTMLAnchorElement): void {
+  const exist = cardButtonsMap.get(anchor);
+  if (exist && exist.isConnected) {
+    return;
+  }
+
+  const target = parseAttachLink(anchor);
+  const host = anchor.parentElement;
+  if (!target || !host) {
+    return;
+  }
+
+  const btnElm = createButton("dnt-card-btn", target);
+
+  if (host.querySelectorAll(FILE_SELECTOR).length === 1) {
+    host.classList.add("dnt-host");
+    btnElm.classList.add("dnt-card-btn--overlay");
+    host.appendChild(btnElm);
+  } else {
+    anchor.after(btnElm);
+  }
+
+  cardButtonsMap.set(anchor, btnElm);
+}
+
+function findViewerFrame(): HTMLIFrameElement | null {
+  for (const frame of document.querySelectorAll("iframe")) {
+    const rect = frame.getBoundingClientRect();
+    if (rect.width >= innerWidth * 0.9 && rect.height >= innerHeight * 0.8) {
+      return frame;
+    }
+  }
+  return null;
+}
+
+function resolveViewerTarget(frame: HTMLIFrameElement): DownloadInfo | null {
+  let url: URL | null = null;
+  try {
+    url = new URL(frame.src, location.href);
+  } catch (_) {}
+
+  const fileId = url?.pathname.match(FILE_PATH)?.[1] ?? lastOpened?.fileId;
+  if (!fileId) {
+    return null;
+  }
+  const authUser = getAuthUserFromHref(frame.src)  ?? lastOpened?.authUser ?? getAuthUserFromPath();
+
+  return {fileId, authUser};
+}
+
+function updateViewerButton(): void {
+  if (viewerBtnElm && !viewerBtnElm.isConnected) {
+    viewerBtnElm = null;
+  }
+
+  const frame = findViewerFrame();
+  const target = frame ? resolveViewerTarget(frame) : null;
+
+  if (!target) {
+    viewerBtnElm?.remove();
+    viewerBtnElm = null;
+    return;
+  }
+
+  const downloadUrl = createDownloadUrl(target.fileId, target.authUser);
+  if (!viewerBtnElm) {
+    viewerBtnElm = createButton("dnt-viewer-btn", target);
+    document.body.appendChild(viewerBtnElm);
+  } else if (viewerBtnElm.getAttribute("href") !== downloadUrl) {
+    viewerBtnElm.setAttribute("href", downloadUrl);
+  }
+}
+
+document.addEventListener("click", (event) => {
+  const attachment = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>(FILE_SELECTOR) : null;
+  const tabOpened = attachment && parseAttachLink(attachment);
+  if (tabOpened) {
+    lastOpened = tabOpened;
+  }
+}, true);
 
 function scan(): void {
   const anchors = document.querySelectorAll<HTMLAnchorElement>(FILE_SELECTOR);
-  anchors.forEach(addButton);
+  anchors.forEach(addCardButton);
+  try {
+    updateViewerButton();
+  } catch (_) {}
 }
 
 let timer: number | undefined;
-new MutationObserver(() => {
+
+function schedule(): void {
   clearTimeout(timer);
   timer = setTimeout(scan, 200);
-}).observe(document.body, {childList: true, subtree: true});
+}
+
+new MutationObserver(schedule).observe(document.body, {childList: true, subtree: true});
+window.addEventListener("resize", schedule);
 
 scan();
