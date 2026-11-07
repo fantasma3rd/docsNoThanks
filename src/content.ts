@@ -15,7 +15,10 @@ interface DownloadInfo {
 }
 
 function getAuthUserFromHref (href: string): string | null {
-  const userHref = new URL(href, location.href).searchParams.get("authuser");
+  let userHref: string | null = null;
+  try {
+    userHref = new URL(href, location.href).searchParams.get("authuser");
+  } catch (_) {};
   return userHref;
 }
 
