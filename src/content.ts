@@ -1,6 +1,7 @@
 const FILE_SELECTOR = 'a[href*="drive.google.com/file/d/"]';
 const FILE_URL = /^https:\/\/drive\.google\.com\/file\/d\/([\w-]+)/;
 const FILE_PATH = /\/file\/d\/([\w-]+)/;
+const USER_PATH = /^\/u\/(\d+)\//;
 const DOWNLOAD_URL = "https://drive.usercontent.google.com/download";
 const MARK = "data-cqd";
 
@@ -18,7 +19,7 @@ function getAuthUserFromHref (anchor: HTMLAnchorElement): string | null {
 }
 
 function getAuthUserFromPath (): string {
-  const userUrl = location.pathname.match(/^\/u\/(\d+)\//);
+  const userUrl = location.pathname.match(USER_PATH);
   return userUrl?.[1] ?? "0";
 }
 
