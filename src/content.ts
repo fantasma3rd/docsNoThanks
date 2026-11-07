@@ -4,7 +4,7 @@ const FILE_PATH = /\/file\/d\/([\w-]+)/;
 const DOWNLOAD_URL = "https://drive.usercontent.google.com/download";
 const MARK = "data-cqd";
 
-const cardButtonsMap = new WeakMap();
+const cardButtonsMap = new WeakMap<HTMLAnchorElement, HTMLAnchorElement>();
 let lastOpened: DownloadInfo;
 
 interface DownloadInfo {
