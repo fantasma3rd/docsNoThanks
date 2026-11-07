@@ -7,11 +7,6 @@ const cardButtonsMap = new WeakMap<HTMLAnchorElement, HTMLAnchorElement>();
 let lastOpened: DownloadInfo | null = null;
 let viewerBtnElm: HTMLAnchorElement | null = null;
 
-interface DownloadInfo {
-  fileId: string;
-  authUser: string;
-}
-
 function getAuthUserFromHref (href: string): string | null {
   let userHref: string | null = null;
   try {
