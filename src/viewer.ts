@@ -4,6 +4,7 @@ const CLASSROOM_ORIGIN = "https://classroom.google.com";
 let mode: "frame" | "top" | null = null;
 let fromParent: DownloadInfo | null = null;
 let requestsLeft: number = 8;
+let timer: number | undefined;
 
 function requestTarget(): void {
   if (mode !== "frame" || requestsLeft <= 0) {
@@ -40,4 +41,9 @@ function openDownload(target: DownloadInfo): void {
   document.body.appendChild(linkElm);
   linkElm.click();
   linkElm.remove();
+}
+
+function schedule(): void {
+  clearTimeout(timer);
+  timer = setTimeout(addToolbarButton, 150);
 }
