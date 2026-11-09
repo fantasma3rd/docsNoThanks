@@ -129,3 +129,36 @@ function schedule(): void {
   clearTimeout(timer);
   timer = setTimeout(addToolbarButton, 150);
 }
+
+function main(): void {
+  if (location.hostname === "drive.google.com" && embeddedByClassroom()) {
+    mode = "frame";
+  } else if (location.origin === CLASSROOM_ORIGIN && window === window.top) {
+    mode = "top";
+  }
+  if (!mode) {
+    return;
+  } else if (mode === "frame") {
+    addEventListener("message", (event) => {
+      if (event.origin !== CLASSROOM_ORIGIN || event.source !== window.parent) {
+        return;
+      }
+      const data = event.data;
+      if (!data || data.type !== "dnt:target") {
+        return;
+      }
+      if (!isValidId(data.fileId) || !isValidAuthuser(data.authUser)) {
+        return;
+      }
+      fromParent = { fileId: data.fileId, authUser: data.authUser };
+      addToolbarButton();
+    })
+  }
+
+  new MutationObserver(schedule).observe(document.documentElement, {childList: true, subtree: true});
+
+  requestTarget();
+  addToolbarButton();
+}
+
+main();
