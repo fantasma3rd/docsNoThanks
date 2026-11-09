@@ -30,3 +30,14 @@ function currentTarget(): DownloadInfo | null {
   const authUser = isValidAuthuser(hrefUser) ? hrefUser : fromParent ? fromParent.authUser : "0";
   return {fileId, authUser};
 }
+
+function openDownload(target: DownloadInfo): void {
+  const linkElm = document.createElement("a");
+  linkElm.href = createDownloadUrl(target.fileId, target.authUser);
+  linkElm.target = "_blank";
+  linkElm.rel = "noopener";
+  linkElm.style.display = "none";
+  document.body.appendChild(linkElm);
+  linkElm.click();
+  linkElm.remove();
+}
