@@ -1,17 +1,11 @@
+import { type DownloadInfo, createDownloadUrl, isValidAuthuser, state, FILE_PATH } from "./shared";
+
+const VIEWER_ORIGIN = "https://drive.google.com";
 const FILE_SELECTOR = 'a[href*="drive.google.com/file/d/"]';
 const FILE_URL = /^https:\/\/drive\.google\.com\/file\/d\/([\w-]+)/;
-const FILE_PATH = /\/file\/d\/([\w-]+)/;
 const USER_PATH = /^\/u\/(\d+)\//;
-const DOWNLOAD_URL = "https://drive.usercontent.google.com/download";
 
 const cardButtonsMap = new WeakMap<HTMLAnchorElement, HTMLAnchorElement>();
-let lastOpened: DownloadInfo | null = null;
-let viewerBtnElm: HTMLAnchorElement | null = null;
-
-interface DownloadInfo {
-  fileId: string;
-  authUser: string;
-}
 
 function getAuthUserFromHref (href: string): string | null {
   let userHref: string | null = null;
@@ -48,14 +42,6 @@ function createIcon(): SVGSVGElement {
   svgElm.appendChild(pathElm);
 
   return svgElm;
-}
-
-function createDownloadUrl(fileId: string, authUser: string): string {
-  const downloadUrl = new URL(DOWNLOAD_URL);
-  downloadUrl.searchParams.set("id", fileId);
-  downloadUrl.searchParams.set("export", "download");
-  downloadUrl.searchParams.set("authuser", authUser);
-  return downloadUrl.toString();
 }
 
 function createButton(className: string, target: DownloadInfo): HTMLAnchorElement {
@@ -95,68 +81,50 @@ function addCardButton(anchor: HTMLAnchorElement): void {
   cardButtonsMap.set(anchor, btnElm);
 }
 
-function findViewerFrame(): HTMLIFrameElement | null {
-  for (const frame of document.querySelectorAll("iframe")) {
-    const rect = frame.getBoundingClientRect();
-    if (rect.width >= innerWidth * 0.9 && rect.height >= innerHeight * 0.8) {
-      return frame;
-    }
-  }
-  return null;
-}
-
-function resolveViewerTarget(frame: HTMLIFrameElement): DownloadInfo | null {
+function resolveTarget(frame: HTMLIFrameElement | undefined): DownloadInfo | null {
   let url: URL | null = null;
-  try {
-    url = new URL(frame.src, location.href);
-  } catch (_) {}
-
-  const fileId = url?.pathname.match(FILE_PATH)?.[1] ?? lastOpened?.fileId;
+  if (frame) {
+    try {
+      url = new URL(frame.src, location.href);
+    } catch (_) {}
+  }
+  const fileId = url?.pathname.match(FILE_PATH)?.[1] ?? state.lastOpened?.fileId;
   if (!fileId) {
     return null;
   }
-  const authUser = getAuthUserFromHref(frame.src)  ?? lastOpened?.authUser ?? getAuthUserFromPath();
 
+  const hrefUser = frame ? getAuthUserFromHref(frame.src) : null;
+  const authUser = isValidAuthuser(hrefUser) ? hrefUser : state.lastOpened?.authUser ?? getAuthUserFromPath();
   return {fileId, authUser};
-}
-
-function updateViewerButton(): void {
-  if (viewerBtnElm && !viewerBtnElm.isConnected) {
-    viewerBtnElm = null;
-  }
-
-  const frame = findViewerFrame();
-  const target = frame ? resolveViewerTarget(frame) : null;
-
-  if (!target) {
-    viewerBtnElm?.remove();
-    viewerBtnElm = null;
-    return;
-  }
-
-  const downloadUrl = createDownloadUrl(target.fileId, target.authUser);
-  if (!viewerBtnElm) {
-    viewerBtnElm = createButton("dnt-viewer-btn", target);
-    document.body.appendChild(viewerBtnElm);
-  } else if (viewerBtnElm.getAttribute("href") !== downloadUrl) {
-    viewerBtnElm.setAttribute("href", downloadUrl);
-  }
 }
 
 document.addEventListener("click", (event) => {
   const attachment = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>(FILE_SELECTOR) : null;
   const tabOpened = attachment && parseAttachLink(attachment);
   if (tabOpened) {
-    lastOpened = tabOpened;
+    state.lastOpened = tabOpened;
   }
 }, true);
+
+window.addEventListener("message", (event) => {
+  if (event.origin !== VIEWER_ORIGIN) {
+    return;
+  }
+  if (!event.data || event.data.type !== "dnt:ready") {
+    return;
+  }
+
+  const frame = Array.from(document.querySelectorAll("iframe")).find((frm) => frm.contentWindow === event.source);
+  const target = resolveTarget(frame);
+  if (!target) {
+    return;
+  }
+  event.source?.postMessage({ type: "dnt:target", fileId: target.fileId, authUser: target.authUser }, { targetOrigin: event.origin});
+});
 
 function scan(): void {
   const anchors = document.querySelectorAll<HTMLAnchorElement>(FILE_SELECTOR);
   anchors.forEach(addCardButton);
-  try {
-    updateViewerButton();
-  } catch (_) {}
 }
 
 let timer: number | undefined;
@@ -167,6 +135,5 @@ function schedule(): void {
 }
 
 new MutationObserver(schedule).observe(document.body, {childList: true, subtree: true});
-window.addEventListener("resize", schedule);
 
 scan();

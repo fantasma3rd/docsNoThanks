@@ -1,13 +1,19 @@
 {
   "manifest_version": 3,
   "name": "Docs, No Thanks",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Google Classroom attachments, downloaded in one click. No ceremonial trip through Docs required.",
   "content_scripts": [
     {
       "matches": ["https://classroom.google.com/*"],
-      "js": ["content.js"],
+      "js": ["viewer.js", "content.js"],
       "css": ["content.css"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://drive.google.com/*"],
+      "all_frames": true,
+      "js": ["viewer.js"],
       "run_at": "document_idle"
     }
   ]
