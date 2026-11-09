@@ -1,5 +1,6 @@
 const DOWNLOAD_URL = "https://drive.usercontent.google.com/download";
 
+export const FILE_PATH = /\/file\/d\/([\w-]+)/;
 export const state: { lastOpened: DownloadInfo | null } = { lastOpened: null };
 
 export interface DownloadInfo {

@@ -1,9 +1,8 @@
-import { type DownloadInfo, createDownloadUrl, isValidAuthuser, state } from "./shared";
+import { type DownloadInfo, createDownloadUrl, isValidAuthuser, state, FILE_PATH } from "./shared";
 
 const VIEWER_ORIGIN = "https://drive.google.com";
 const FILE_SELECTOR = 'a[href*="drive.google.com/file/d/"]';
 const FILE_URL = /^https:\/\/drive\.google\.com\/file\/d\/([\w-]+)/;
-const FILE_PATH = /\/file\/d\/([\w-]+)/;
 const USER_PATH = /^\/u\/(\d+)\//;
 
 const cardButtonsMap = new WeakMap<HTMLAnchorElement, HTMLAnchorElement>();
