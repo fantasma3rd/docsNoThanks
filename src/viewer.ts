@@ -43,6 +43,15 @@ function openDownload(target: DownloadInfo): void {
   linkElm.remove();
 }
 
+function embeddedByClassroom(): boolean {
+  if (window === window.top) {
+    return false;
+  }
+  const ancestor = location.ancestorOrigins ? Array.from(location.ancestorOrigins) : [];
+
+  return ancestor.length === 0 || ancestor.includes(CLASSROOM_ORIGIN);
+}
+
 function schedule(): void {
   clearTimeout(timer);
   timer = setTimeout(addToolbarButton, 150);
