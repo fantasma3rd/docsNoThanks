@@ -33,13 +33,13 @@ function currentTarget(): DownloadInfo | null {
     return state.lastOpened;
   }
 
-  const fileId = location.pathname.match(FILE_PATH)?.[1] ?? (fromParent && fromParent.fileId);
+  const fileId = location.pathname.match(FILE_PATH)?.[1] ?? fromParent?.fileId;
   if (!fileId) {
     return null;
   }
 
-  const hrefUser = new URLSearchParams(location.search).get("authuser");;
-  const authUser = isValidAuthuser(hrefUser) ? hrefUser : fromParent ? fromParent.authUser : "0";
+  const hrefUser = new URLSearchParams(location.search).get("authuser");
+  const authUser = isValidAuthuser(hrefUser) ? hrefUser : fromParent?.authUser ?? "0";
   return {fileId, authUser};
 }
 
@@ -64,18 +64,18 @@ function embeddedByClassroom(): boolean {
 }
 
 function addToolbarButton(): void {
-  const printBtn: Element | null = document.querySelector(PRINT_SEL);
+  const printBtn = document.querySelector(PRINT_SEL);
   if (!printBtn) {
     return;
   }
-  const tooltipWrap: Element | null = printBtn.closest("[data-is-tooltip-wrapper]");
-  const containerPrintBtn: HTMLElement | null = tooltipWrap && tooltipWrap.parentElement;
-  const bar: HTMLElement | null = containerPrintBtn && containerPrintBtn.parentElement;
+  const tooltipWrap = printBtn.closest("[data-is-tooltip-wrapper]");
+  const containerPrintBtn = tooltipWrap?.parentElement;
+  const bar = containerPrintBtn?.parentElement;
   if (!containerPrintBtn || !bar) {
     return;
   }
 
-  if (bar.querySelector(DL_SEL) || bar.querySelector("[data-cqd-toolbar]")) {
+  if (bar.querySelector(DL_SEL) || bar.querySelector("[data-dnt-toolbar]")) {
     return;
   }
 
@@ -88,17 +88,14 @@ function addToolbarButton(): void {
   if (!(wrapDlBtn instanceof HTMLElement)) {
     return;
   }
-  wrapDlBtn.setAttribute("data-cqd-toolbar", "1");
+  wrapDlBtn.setAttribute("data-dnt-toolbar", "1");
   
   for (const elm of [wrapDlBtn, ...wrapDlBtn.querySelectorAll("*")]) {
     for (const name of STRIP_ATTRS) {
       elm.removeAttribute(name);
     }
   }
-  const toolTip = wrapDlBtn.querySelector('[role="tooltip"]');
-  if (toolTip) {
-    toolTip.remove();
-  }
+  wrapDlBtn.querySelector('[role="tooltip"]')?.remove();
 
   const toolBarBtn = wrapDlBtn.querySelector("button");
   const toolBarSvg = wrapDlBtn.querySelector("svg");
@@ -111,6 +108,7 @@ function addToolbarButton(): void {
   toolBarBtn.type = "button";
   toolBarSvg.setAttribute("viewBox", ICON_VIEWBOX);
   toolBarSvg.setAttribute("class", "Q6yead QJZfhe Q06W8");
+  toolBarBtn.removeAttribute("aria-label");
   toolBarSvg.replaceChildren(toolBarPath);
 
   toolBarBtn.addEventListener("click", (event) => {
@@ -138,8 +136,9 @@ function main(): void {
   }
   if (!mode) {
     return;
-  } else if (mode === "frame") {
-    addEventListener("message", (event) => {
+  }
+  if (mode === "frame") {
+    window.addEventListener("message", (event) => {
       if (event.origin !== CLASSROOM_ORIGIN || event.source !== window.parent) {
         return;
       }
