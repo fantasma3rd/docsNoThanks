@@ -1,4 +1,4 @@
-import { type DownloadInfo, createDownloadUrl, isValidAuthuser, state, FILE_PATH } from "./shared";
+import { type DownloadInfo, createDownloadUrl, isValidAuthuser, state, FILE_PATH, getMode, MODES, startBackgroundDownload } from "./shared";
 
 const VIEWER_ORIGIN = "https://drive.google.com";
 const FILE_SELECTOR = 'a[href*="drive.google.com/file/d/"]';
@@ -51,7 +51,13 @@ function createButton(target: DownloadInfo): HTMLAnchorElement {
   btnElm.target = "_blank";
   btnElm.rel = "noopener";
   btnElm.appendChild(createIcon());
-  btnElm.addEventListener("click", (event) => event.stopPropagation());
+  btnElm.addEventListener("click", (event) => {
+    event.stopPropagation();
+    if (getMode() === MODES.BACKGROUND) {
+      event.preventDefault();
+      startBackgroundDownload(target);
+    }
+  });
 
   return btnElm;
 }
