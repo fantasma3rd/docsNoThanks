@@ -1,12 +1,20 @@
+export const FILE_PATH = /\/file\/d\/([\w-]+)/;
+
 const DOWNLOAD_URL = "https://drive.usercontent.google.com/download";
 
-export const FILE_PATH = /\/file\/d\/([\w-]+)/;
 export const state: { lastOpened: DownloadInfo | null } = { lastOpened: null };
 
 export interface DownloadInfo {
   fileId: string;
   authUser: string;
 }
+
+export type DownloadMode = "newTab" | "background";
+
+export const SETTINGS_KEY = "downloadMode";
+export const MODES = { NEW_TAB: "newTab", BACKGROUND: "background" } as const;
+export const DEFAULT_MODE = MODES.NEW_TAB;
+
 
 export function createDownloadUrl(fileId: string, authUser: string): string {
   const downloadUrl = new URL(DOWNLOAD_URL);
