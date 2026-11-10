@@ -7,6 +7,8 @@ const DL_SEL = 'button[aria-label="ダウンロード"], button[aria-label="Down
 const ICON_VIEWBOX = "0 96 960 960";
 const ICON_PATH =
   "M240 896q-33 0-56.5-23.5T160 816V696h80v120h480V696h80v120q0 33-23.5 56.5T720 896H240Zm240-160L280 536l56-58 104 104V256h80v326l104-104 56 58-200 200Z";
+const STATE_LAYER_SEL = ".UTNHae";
+const HOVER_CLASS = "J58z0d";
 const STRIP_ATTRS = [
   "jscontroller", "jsaction", "jsname", "jsshadow", "id",
   "data-tooltip-id", "data-tooltip-enabled", "data-tooltip-y-position", "data-tooltip-classes",
@@ -101,6 +103,17 @@ function addToolbarButton(): void {
   const toolBarSvg = wrapDlBtn.querySelector("svg");
   if (!toolBarBtn || !toolBarSvg) {
     return;
+  }
+
+  const stateLayer = wrapDlBtn.querySelector(STATE_LAYER_SEL);
+  if (stateLayer) {
+    stateLayer.classList.remove(HOVER_CLASS);
+    toolBarBtn.addEventListener("pointerenter", () => {
+      stateLayer.classList.add(HOVER_CLASS);
+    });
+    toolBarBtn.addEventListener("pointerleave", () => {
+      stateLayer.classList.remove(HOVER_CLASS);
+    });
   }
 
   const toolBarPath = document.createElementNS("http://www.w3.org/2000/svg", "path");

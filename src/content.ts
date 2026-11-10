@@ -5,7 +5,7 @@ const FILE_SELECTOR = 'a[href*="drive.google.com/file/d/"]';
 const FILE_URL = /^https:\/\/drive\.google\.com\/file\/d\/([\w-]+)/;
 const USER_PATH = /^\/u\/(\d+)\//;
 
-const cardButtonsMap = new WeakMap<HTMLAnchorElement, HTMLAnchorElement>();
+const cardButtonsMap = new Map<HTMLAnchorElement, HTMLAnchorElement>();
 
 function getAuthUserFromHref (href: string): string | null {
   let userHref: string | null = null;
@@ -44,9 +44,9 @@ function createIcon(): SVGSVGElement {
   return svgElm;
 }
 
-function createButton(className: string, target: DownloadInfo): HTMLAnchorElement {
+function createButton(target: DownloadInfo): HTMLAnchorElement {
   const btnElm = document.createElement("a");
-  btnElm.className = className;
+  btnElm.className = "dnt-card-btn";
   btnElm.href = createDownloadUrl(target.fileId, target.authUser);
   btnElm.target = "_blank";
   btnElm.rel = "noopener";
@@ -56,8 +56,19 @@ function createButton(className: string, target: DownloadInfo): HTMLAnchorElemen
   return btnElm;
 }
 
+function isVisible(elm: Element): boolean {
+  return elm.isConnected && elm.getClientRects().length > 0;
+}
+
 function addCardButton(anchor: HTMLAnchorElement): void {
   const exist = cardButtonsMap.get(anchor);
+
+  if (!isVisible(anchor)) {
+    if (exist) {
+      removeCardButton(anchor);
+    }
+    return;
+  }
   if (exist && exist.isConnected) {
     return;
   }
@@ -68,10 +79,13 @@ function addCardButton(anchor: HTMLAnchorElement): void {
     return;
   }
 
-  const btnElm = createButton("dnt-card-btn", target);
+  const btnElm = createButton(target);
 
-  if (host.querySelectorAll(FILE_SELECTOR).length === 1) {
-    host.classList.add("dnt-host");
+  if (Array.from(host.querySelectorAll(FILE_SELECTOR)).filter(isVisible).length === 1) {
+    const position = getComputedStyle(host).position;
+    if ((!position || position === "static") && !host.classList.contains("dnt-host")) {
+      host.classList.add("dnt-host");
+    }
     btnElm.classList.add("dnt-card-btn--overlay");
     host.appendChild(btnElm);
   } else {
@@ -79,6 +93,17 @@ function addCardButton(anchor: HTMLAnchorElement): void {
   }
 
   cardButtonsMap.set(anchor, btnElm);
+}
+
+function removeCardButton(anchor: HTMLAnchorElement): void {
+  const btnElm = cardButtonsMap.get(anchor);
+  cardButtonsMap.delete(anchor);
+  
+  const host = btnElm?.classList.contains("dnt-card-btn--overlay") ? btnElm.parentElement : null;
+  btnElm?.remove();
+  if (host?.classList.contains("dnt-host") && !Array.from(host.children).some((cls) => cls.classList.contains("dnt-card-btn--overlay"))) {
+    host.classList.remove("dnt-host");
+  }
 }
 
 function resolveTarget(frame: HTMLIFrameElement | undefined): DownloadInfo | null {
@@ -123,7 +148,12 @@ window.addEventListener("message", (event) => {
 });
 
 function scan(): void {
-  const anchors = document.querySelectorAll<HTMLAnchorElement>(FILE_SELECTOR);
+  const anchors = new Set(document.querySelectorAll<HTMLAnchorElement>(FILE_SELECTOR));
+  for (const anchor of Array.from(cardButtonsMap.keys())) {
+    if (!anchors.has(anchor)) {
+      removeCardButton(anchor);
+    }
+  }
   anchors.forEach(addCardButton);
 }
 
@@ -134,6 +164,7 @@ function schedule(): void {
   timer = setTimeout(scan, 200);
 }
 
-new MutationObserver(schedule).observe(document.body, {childList: true, subtree: true});
+new MutationObserver(schedule).observe(document.body, {childList: true, subtree: true, attributes: true, attributeFilter: ["class", "style", "hidden"]});
+addEventListener("resize", schedule);
 
 scan();
