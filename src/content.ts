@@ -85,6 +85,17 @@ function addCardButton(anchor: HTMLAnchorElement): void {
   cardButtonsMap.set(anchor, btnElm);
 }
 
+function removeCardButton(anchor: HTMLAnchorElement): void {
+  const btnElm = cardButtonsMap.get(anchor);
+  cardButtonsMap.delete(anchor);
+  
+  const host = btnElm?.classList.contains("dnt-card-btn--overlay") ? btnElm.parentElement : null;
+  btnElm?.remove();
+  if (host?.classList.contains("dnt-host") && !Array.from(host.children).some((cls) => cls.classList.contains("dnt-card-btn--overlay"))) {
+    host.classList.remove("dnt-host");
+  }
+}
+
 function resolveTarget(frame: HTMLIFrameElement | undefined): DownloadInfo | null {
   let url: URL | null = null;
   if (frame) {
