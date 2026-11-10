@@ -56,6 +56,10 @@ function createButton(className: string, target: DownloadInfo): HTMLAnchorElemen
   return btnElm;
 }
 
+function isVisible(elm: Element): boolean {
+  return elm.isConnected && elm.getClientRects().length > 0;
+}
+
 function addCardButton(anchor: HTMLAnchorElement): void {
   const exist = cardButtonsMap.get(anchor);
   if (exist && exist.isConnected) {
