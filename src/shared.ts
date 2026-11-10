@@ -15,6 +15,10 @@ export const SETTINGS_KEY = "downloadMode";
 export const MODES = { NEW_TAB: "newTab", BACKGROUND: "background" } as const;
 export const DEFAULT_MODE = MODES.NEW_TAB;
 
+export function isValidMode(value: unknown): value is DownloadMode {
+  return value === "newTab" || value === "background";
+}
+
 
 export function createDownloadUrl(fileId: string, authUser: string): string {
   const downloadUrl = new URL(DOWNLOAD_URL);
