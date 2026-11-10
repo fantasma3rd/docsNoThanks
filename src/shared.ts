@@ -59,3 +59,20 @@ export function isValidId(str: unknown): str is string {
 export function isValidAuthuser(str: unknown): str is string {
   return typeof str === "string" && /^\d{1,2}$/.test(str);
 }
+export function startBackgroundDownload(target: DownloadInfo): void {
+  function fallback(): void {
+    try {
+      window.open(createDownloadUrl(target.fileId, target.authUser), "_blank", "noopener");
+    } catch (_) {};
+  }
+
+  try {
+    Promise.resolve(chrome.runtime.sendMessage({ type: MSG_DOWNLOAD, fileId: target.fileId, authUser: target.authUser })).then((response) => {
+      if (!response?.ok) {
+        fallback();
+      }
+    }).catch(fallback)
+  } catch (_) {
+    fallback();
+  }
+}
