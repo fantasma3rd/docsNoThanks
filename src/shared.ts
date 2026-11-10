@@ -19,6 +19,12 @@ export function isValidMode(value: unknown): value is DownloadMode {
   return value === "newTab" || value === "background";
 }
 
+let mode: DownloadMode = DEFAULT_MODE;
+
+export function getMode(): DownloadMode {
+  return mode;
+}
+
 
 export function createDownloadUrl(fileId: string, authUser: string): string {
   const downloadUrl = new URL(DOWNLOAD_URL);
