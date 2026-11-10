@@ -5,7 +5,7 @@ const FILE_SELECTOR = 'a[href*="drive.google.com/file/d/"]';
 const FILE_URL = /^https:\/\/drive\.google\.com\/file\/d\/([\w-]+)/;
 const USER_PATH = /^\/u\/(\d+)\//;
 
-const cardButtonsMap = new WeakMap<HTMLAnchorElement, HTMLAnchorElement>();
+const cardButtonsMap = new Map<HTMLAnchorElement, HTMLAnchorElement>();
 
 function getAuthUserFromHref (href: string): string | null {
   let userHref: string | null = null;
@@ -62,6 +62,13 @@ function isVisible(elm: Element): boolean {
 
 function addCardButton(anchor: HTMLAnchorElement): void {
   const exist = cardButtonsMap.get(anchor);
+
+  if (!isVisible(anchor)) {
+    if (exist) {
+      removeCardButton(anchor);
+    }
+    return;
+  }
   if (exist && exist.isConnected) {
     return;
   }
@@ -72,10 +79,13 @@ function addCardButton(anchor: HTMLAnchorElement): void {
     return;
   }
 
-  const btnElm = createButton("dnt-card-btn", target);
+  const btnElm = createButton(target);
 
-  if (host.querySelectorAll(FILE_SELECTOR).length === 1) {
-    host.classList.add("dnt-host");
+  if (Array.from(host.querySelectorAll(FILE_SELECTOR)).filter(isVisible).length === 1) {
+    const position = getComputedStyle(host).position;
+    if ((!position || position === "static") && !host.classList.contains("dnt-host")) {
+      host.classList.add("dnt-host");
+    }
     btnElm.classList.add("dnt-card-btn--overlay");
     host.appendChild(btnElm);
   } else {
