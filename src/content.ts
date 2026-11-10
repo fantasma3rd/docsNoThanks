@@ -44,9 +44,9 @@ function createIcon(): SVGSVGElement {
   return svgElm;
 }
 
-function createButton(className: string, target: DownloadInfo): HTMLAnchorElement {
+function createButton(target: DownloadInfo): HTMLAnchorElement {
   const btnElm = document.createElement("a");
-  btnElm.className = className;
+  btnElm.className = "dnt-card-btn";
   btnElm.href = createDownloadUrl(target.fileId, target.authUser);
   btnElm.target = "_blank";
   btnElm.rel = "noopener";
