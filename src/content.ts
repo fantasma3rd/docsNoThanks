@@ -148,7 +148,12 @@ window.addEventListener("message", (event) => {
 });
 
 function scan(): void {
-  const anchors = document.querySelectorAll<HTMLAnchorElement>(FILE_SELECTOR);
+  const anchors = new Set(document.querySelectorAll<HTMLAnchorElement>(FILE_SELECTOR));
+  for (const anchor of Array.from(cardButtonsMap.keys())) {
+    if (!anchors.has(anchor)) {
+      removeCardButton(anchor);
+    }
+  }
   anchors.forEach(addCardButton);
 }
 
