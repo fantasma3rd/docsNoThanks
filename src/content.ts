@@ -164,6 +164,7 @@ function schedule(): void {
   timer = setTimeout(scan, 200);
 }
 
-new MutationObserver(schedule).observe(document.body, {childList: true, subtree: true});
+new MutationObserver(schedule).observe(document.body, {childList: true, subtree: true, attributes: true, attributeFilter: ["class", "style", "hidden"]});
+addEventListener("resize", schedule);
 
 scan();
