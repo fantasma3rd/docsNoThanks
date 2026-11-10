@@ -59,6 +59,9 @@ export function isValidId(str: unknown): str is string {
 export function isValidAuthuser(str: unknown): str is string {
   return typeof str === "string" && /^\d{1,2}$/.test(str);
 }
+
+export const MSG_DOWNLOAD = "dnt:download";
+
 export function startBackgroundDownload(target: DownloadInfo): void {
   function fallback(): void {
     try {
@@ -75,4 +78,8 @@ export function startBackgroundDownload(target: DownloadInfo): void {
   } catch (_) {
     fallback();
   }
+}
+
+if (typeof document !== "undefined") {
+  initMode();
 }
