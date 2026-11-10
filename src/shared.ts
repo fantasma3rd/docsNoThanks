@@ -16,7 +16,7 @@ export const MODES = { NEW_TAB: "newTab", BACKGROUND: "background" } as const;
 export const DEFAULT_MODE = MODES.NEW_TAB;
 
 export function isValidMode(value: unknown): value is DownloadMode {
-  return value === "newTab" || value === "background";
+  return value === MODES.NEW_TAB || value === MODES.BACKGROUND;
 }
 
 let mode: DownloadMode = DEFAULT_MODE;
@@ -40,7 +40,7 @@ export function initMode(): void {
         const next = changes[SETTINGS_KEY].newValue;
         mode = isValidMode(next) ? next : DEFAULT_MODE;
       }
-    })
+    });
   } catch (_) {}
 }
 
@@ -66,15 +66,17 @@ export function startBackgroundDownload(target: DownloadInfo): void {
   function fallback(): void {
     try {
       window.open(createDownloadUrl(target.fileId, target.authUser), "_blank", "noopener");
-    } catch (_) {};
+    } catch (_) {}
   }
 
   try {
-    Promise.resolve(chrome.runtime.sendMessage({ type: MSG_DOWNLOAD, fileId: target.fileId, authUser: target.authUser })).then((response) => {
-      if (!response?.ok) {
-        fallback();
-      }
-    }).catch(fallback)
+    chrome.runtime
+      .sendMessage({ type: MSG_DOWNLOAD, fileId: target.fileId, authUser: target.authUser })
+      .then((response) => {
+        if (!response?.ok) {
+          fallback();
+        }})
+      .catch(fallback);
   } catch (_) {
     fallback();
   }
