@@ -25,6 +25,24 @@ export function getMode(): DownloadMode {
   return mode;
 }
 
+export function initMode(): void {
+  if (!chrome?.storage) {
+    return;
+  }
+  try {
+    chrome.storage.local.get(SETTINGS_KEY).then((value) => {
+      if (isValidMode(value?.[SETTINGS_KEY])) {
+        mode = value[SETTINGS_KEY];
+      }
+    }).catch(() => {});
+    chrome.storage.onChanged.addListener((changes, area) => {
+      if (area === "local" && changes[SETTINGS_KEY]) {
+        const next = changes[SETTINGS_KEY].newValue;
+        mode = isValidMode(next) ? next : DEFAULT_MODE;
+      }
+    })
+  } catch (_) {}
+}
 
 export function createDownloadUrl(fileId: string, authUser: string): string {
   const downloadUrl = new URL(DOWNLOAD_URL);
