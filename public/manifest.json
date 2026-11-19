@@ -8,7 +8,7 @@
     "service_worker": "background.js"
   },
   "action": {
-    "default_title": "Classroom Quick Download の設定",
+    "default_title": "Docs, No Thanks",
     "default_popup": "options.html"
   },
   "options_ui": {
