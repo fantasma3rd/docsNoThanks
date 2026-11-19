@@ -3,6 +3,18 @@
   "name": "Docs, No Thanks",
   "version": "0.3.1",
   "description": "Google Classroom attachments, downloaded in one click. No ceremonial trip through Docs required.",
+  "permissions": ["storage", "downloads"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Classroom Quick Download の設定",
+    "default_popup": "options.html"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": false
+  },
   "content_scripts": [
     {
       "matches": ["https://classroom.google.com/*"],
