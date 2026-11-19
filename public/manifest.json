@@ -1,8 +1,20 @@
 {
   "manifest_version": 3,
   "name": "Docs, No Thanks",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "Google Classroom attachments, downloaded in one click. No ceremonial trip through Docs required.",
+  "permissions": ["storage", "downloads"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Docs, No Thanks",
+    "default_popup": "options.html"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": false
+  },
   "content_scripts": [
     {
       "matches": ["https://classroom.google.com/*"],

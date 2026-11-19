@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ja">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Docs, No Thanks</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+
+<body>
+  <main>
+    <h1>Docs, No Thanks</h1>
+
+    <form id="settings">
+      <fieldset>
+        <legend>ダウンロード種別</legend>
+
+        <label class="opt">
+          <input type="radio" name="mode" value="newTab">
+          <span class="text">
+            <span class="title">新規タブでダウンロード</span>
+            <span class="desc">新しいタブに移動してダウンロードします</span>
+          </span>
+        </label>
+
+        <label class="opt">
+          <input type="radio" name="mode" value="background">
+          <span class="text">
+            <span class="title">バックグラウンドでダウンロード</span>
+            <span class="desc">画面を移動せず、そのままダウンロードします</span>
+            <span class="note" id="bg-unavailable" hidden>このブラウザは対応しておらず、利用できません。</span>
+          </span>
+        </label>
+      </fieldset>
+    </form>
+  </main>
+
+  <script src="options.js"></script>
+</body>
+
+</html>

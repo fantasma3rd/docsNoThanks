@@ -1,4 +1,4 @@
-import { createDownloadUrl, isValidAuthuser, isValidId, state, type DownloadInfo, FILE_PATH } from "./shared";
+import { createDownloadUrl, isValidAuthuser, isValidId, state, type DownloadInfo, FILE_PATH, getMode, MODES, startBackgroundDownload } from "./shared";
 
 const CLASSROOM_ORIGIN = "https://classroom.google.com";
 
@@ -46,6 +46,10 @@ function currentTarget(): DownloadInfo | null {
 }
 
 function openDownload(target: DownloadInfo): void {
+  if (getMode() === MODES.BACKGROUND) {
+    startBackgroundDownload(target);
+    return;
+  }
   const linkElm = document.createElement("a");
   linkElm.href = createDownloadUrl(target.fileId, target.authUser);
   linkElm.target = "_blank";
