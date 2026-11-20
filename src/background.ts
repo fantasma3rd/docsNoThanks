@@ -1,75 +1,71 @@
 import { createDownloadUrl, isValidAuthuser, isValidId, MSG_DOWNLOAD } from "./shared";
 
-const pendingMap = new Map<number, string>();
+const FIRST_CHECK_MS = 2000;  // 初回確認までの待ち時間
+const RECHECK_MS = 1000;  // 再確認の間隔
+const GIVE_UP_MS = 20000;  // 待ち時間の限度
 
-function openTab(url: string): void {
-  chrome.tabs.create({ url, active: true }).catch(() => { });
-}
+const pendingMap = new Map<number, { start: number }>();
 
-async function inspect(downloadId: number): Promise<void> {
-  const url = pendingMap.get(downloadId);
-  if (!url) {
+async function check(tabId: number): Promise<void> {
+  const entry = pendingMap.get(tabId);
+  if (!entry) {  // ダウンロード開始時
     return;
   }
 
-  const [downloadItem] = await chrome.downloads.search({ id: downloadId });
-
-  if (!downloadItem) {  // ダウンロード完了時
-    pendingMap.delete(downloadId);
-    return;
-  }
-
-  if (downloadItem.error) {  // ダウンロード失敗時(ネットワークエラー)
-    pendingMap.delete(downloadId);
-    if (/^(SERVER_|NETWORK_)/.test(downloadItem.error)) {
-      openTab(url);
-    }
-    return;
-  }
-
-  if (downloadItem.mime && /^text\/html\b/i.test(downloadItem.mime)) {  // ダウンロード失敗時(Webページ返却)
-    pendingMap.delete(downloadId);
-    await chrome.downloads.cancel(downloadId).catch(() => { });
-    await chrome.downloads.erase({ id: downloadId }).catch(() => { });
-    openTab(url);
-    return;
-  }
-
-  if (downloadItem.mime || downloadItem.state === "complete") {
-    pendingMap.delete(downloadId);
-  }
-}
-
-async function startDownload(url: string): Promise<void> {
-  if (!chrome.downloads) {  // ブラウザ非対応時
-    openTab(url);
-    return;
-  }
+  let tab: chrome.tabs.Tab;
   try {
-    const downloadId = await chrome.downloads.download({ url, saveAs: false });
-    if (downloadId === undefined) {  // バックグラウンドでのダウンロード失敗時
-      openTab(url);
-      return;
-    }
-    pendingMap.set(downloadId, url);
-    await inspect(downloadId);
+    tab = await chrome.tabs.get(tabId);
   } catch (_) {
-    openTab(url);
+    pendingMap.delete(tabId);  // すでに存在しない場合
+    return;
+  }
+
+  if (tab.status === "loading" && (Date.now() - entry.start) < GIVE_UP_MS) {  // 応答待ちの場合
+    schedule(tabId, RECHECK_MS);
+    return;
+  }
+
+  // ページ表示またはエラーの場合
+  pendingMap.delete(tabId);
+  await reveal(tab);
+}
+
+function schedule(tabId: number, ms: number): void {
+  setTimeout(() => {
+    check(tabId).catch(() => pendingMap.delete(tabId));
+  }, ms);
+}
+
+async function reveal(tab: chrome.tabs.Tab): Promise<void> {
+  await chrome.tabs.update(tab.id, { active: true }).catch(() => {});
+  if (tab.windowId !== undefined) {
+    await chrome.windows.update(tab.windowId, { focused: true }).catch(() => {});
   }
 }
 
-if (chrome.downloads?.onChanged) {
-  chrome.downloads.onChanged.addListener((diff) => {
-    if (!pendingMap.has(diff.id)) {
+async function startDownload(url: string, openerTabId: number | undefined): Promise<void> {
+  let tab: chrome.tabs.Tab;
+  try {
+    tab = await chrome.tabs.create({ url, active: false, openerTabId });
+  } catch (_) {
+    try {
+      tab = await chrome.tabs.create({ url, active: false });
+    } catch (_) {
       return;
     }
-    if (diff.mime || diff.error || diff.state) {
-      inspect(diff.id).catch(() => { });
-    }
-  });
+  }
+
+  if (!tab || tab.id === undefined) {
+    return;
+  }
+
+  pendingMap.set(tab.id, { start: Date.now() });
+  schedule(tab.id, FIRST_CHECK_MS);
 }
 
-chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+chrome.tabs.onRemoved.addListener((tabId) => pendingMap.delete(tabId));
+
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg?.type !== MSG_DOWNLOAD) {
     return false;
   }
@@ -77,7 +73,8 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
     sendResponse({ ok: false });
     return false;
   }
-  startDownload(createDownloadUrl(msg.fileId, msg.authUser)).catch(() => { });
+  const openerTabId = sender?.tab?.id;
+  startDownload(createDownloadUrl(msg.fileId, msg.authUser), openerTabId).catch(() => {});
   sendResponse({ ok: true });
   return false;
 });
