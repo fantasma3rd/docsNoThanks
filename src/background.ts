@@ -33,7 +33,7 @@ async function check(tabId: number): Promise<void> {
 function schedule(tabId: number, ms: number): void {
   setTimeout(() => {
     check(tabId).catch(() => pendingMap.delete(tabId));
-  }, ms)
+  }, ms);
 }
 
 async function reveal(tab: chrome.tabs.Tab): Promise<void> {
