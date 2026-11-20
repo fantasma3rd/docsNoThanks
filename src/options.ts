@@ -1,20 +1,7 @@
-import { DEFAULT_MODE, isValidMode, MODES, SETTINGS_KEY, type DownloadMode } from "./shared";
+import { DEFAULT_MODE, isValidMode, SETTINGS_KEY, type DownloadMode } from "./shared";
 
 const settingForm = document.getElementById("settings");
 const settingRadios = Array.from(document.querySelectorAll<HTMLInputElement>('input[name="mode"]'));
-const radioBackground = settingRadios.find((settingRadio) => settingRadio.value === MODES.BACKGROUND);
-const warningNote = document.getElementById("bg-unavailable");
-
-const supportsBackground = Boolean(chrome?.downloads);
-if (!supportsBackground) {
-  if (radioBackground) {
-    radioBackground.disabled = true;
-    radioBackground.closest(".opt")?.classList.add("is-disabled");
-  }
-  if (warningNote) {
-    warningNote.hidden = false;
-  }
-}
 
 settingForm?.addEventListener("submit", (event) => event.preventDefault());
 
@@ -33,9 +20,6 @@ async function load(): Promise<void> {
     }
   } catch (_) { }
 
-  if (mode === MODES.BACKGROUND && !supportsBackground) {
-    mode = DEFAULT_MODE;
-  }
   show(mode);
 }
 
