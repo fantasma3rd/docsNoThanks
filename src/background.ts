@@ -63,7 +63,8 @@ async function startDownload(url: string, openerTabId: number | undefined): Prom
   schedule(tab.id, FIRST_CHECK_MS);
 }
 
-chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+chrome.tabs.onRemoved.addListener((tabId) => pendingMap.delete(tabId));
+
   if (msg?.type !== MSG_DOWNLOAD) {
     return false;
   }
