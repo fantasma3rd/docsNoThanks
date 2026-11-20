@@ -6,6 +6,30 @@ const GIVE_UP_MS = 20000;  // 待ち時間の限度
 
 const pendingMap = new Map<number, { start: number }>();
 
+async function check(tabId: number): Promise<void> {
+  const entry = pendingMap.get(tabId);
+  if (!entry) {  // ダウンロード開始時
+    return;
+  }
+
+  let tab: chrome.tabs.Tab;
+  try {
+    tab = await chrome.tabs.get(tabId);
+  } catch (_) {
+    pendingMap.delete(tabId);  // すでに存在しない場合
+    return;
+  }
+
+  if (tab.status === "loading" && (Date.now() - entry.start) < GIVE_UP_MS) {  // 応答待ちの場合
+    schedule(tabId, RECHECK_MS);
+    return;
+  }
+
+  // ページ表示またはエラーの場合
+  pendingMap.delete(tabId);
+  await reveal(tab);
+}
+
 function schedule(tabId: number, ms: number): void {
   setTimeout(() => {
     check(tabId).catch(() => pendingMap.delete(tabId));
