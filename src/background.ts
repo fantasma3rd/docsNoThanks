@@ -43,40 +43,6 @@ async function reveal(tab: chrome.tabs.Tab): Promise<void> {
   }
 }
 
-async function inspect(downloadId: number): Promise<void> {
-  const url = pendingMap.get(downloadId);
-  if (!url) {
-    return;
-  }
-
-  const [downloadItem] = await chrome.downloads.search({ id: downloadId });
-
-  if (!downloadItem) {  // ダウンロード完了時
-    pendingMap.delete(downloadId);
-    return;
-  }
-
-  if (downloadItem.error) {  // ダウンロード失敗時(ネットワークエラー)
-    pendingMap.delete(downloadId);
-    if (/^(SERVER_|NETWORK_)/.test(downloadItem.error)) {
-      openTab(url);
-    }
-    return;
-  }
-
-  if (downloadItem.mime && /^text\/html\b/i.test(downloadItem.mime)) {  // ダウンロード失敗時(Webページ返却)
-    pendingMap.delete(downloadId);
-    await chrome.downloads.cancel(downloadId).catch(() => { });
-    await chrome.downloads.erase({ id: downloadId }).catch(() => { });
-    openTab(url);
-    return;
-  }
-
-  if (downloadItem.mime || downloadItem.state === "complete") {
-    pendingMap.delete(downloadId);
-  }
-}
-
 async function startDownload(url: string): Promise<void> {
   if (!chrome.downloads) {  // ブラウザ非対応時
     openTab(url);
