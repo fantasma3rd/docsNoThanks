@@ -1,6 +1,8 @@
 import { createDownloadUrl, isValidAuthuser, isValidId, MSG_DOWNLOAD } from "./shared";
 
-const pendingMap = new Map<number, string>();
+const FIRST_CHECK_MS = 2000;  // 初回確認までの待ち時間
+const RECHECK_MS = 1000;  // 再確認の間隔
+const GIVE_UP_MS = 20000;  // 待ち時間の限度
 
 function openTab(url: string): void {
   chrome.tabs.create({ url, active: true }).catch(() => { });
