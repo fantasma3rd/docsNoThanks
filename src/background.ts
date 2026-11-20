@@ -43,33 +43,24 @@ async function reveal(tab: chrome.tabs.Tab): Promise<void> {
   }
 }
 
-async function startDownload(url: string): Promise<void> {
-  if (!chrome.downloads) {  // ブラウザ非対応時
-    openTab(url);
+async function startDownload(url: string, openerTabId: number | undefined): Promise<void> {
+  let tab: chrome.tabs.Tab;
+  try {
+    tab = await chrome.tabs.create({ url, active: false, openerTabId });
+  } catch (_) {
+    try {
+      tab = await chrome.tabs.create({ url, active: false });
+    } catch (_) {
+      return;
+    }
+  }
+
+  if (!tab || tab.id === undefined) {
     return;
   }
-  try {
-    const downloadId = await chrome.downloads.download({ url, saveAs: false });
-    if (downloadId === undefined) {  // バックグラウンドでのダウンロード失敗時
-      openTab(url);
-      return;
-    }
-    pendingMap.set(downloadId, url);
-    await inspect(downloadId);
-  } catch (_) {
-    openTab(url);
-  }
-}
 
-if (chrome.downloads?.onChanged) {
-  chrome.downloads.onChanged.addListener((diff) => {
-    if (!pendingMap.has(diff.id)) {
-      return;
-    }
-    if (diff.mime || diff.error || diff.state) {
-      inspect(diff.id).catch(() => { });
-    }
-  });
+  pendingMap.set(tab.id, { start: Date.now() });
+  schedule(tab.id, FIRST_CHECK_MS);
 }
 
 chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
