@@ -3,9 +3,11 @@ import { createDownloadUrl, isValidAuthuser, isValidId, MSG_DOWNLOAD } from "./s
 const FIRST_CHECK_MS = 2000;  // 初回確認までの待ち時間
 const RECHECK_MS = 1000;  // 再確認の間隔
 const GIVE_UP_MS = 20000;  // 待ち時間の限度
-
-function openTab(url: string): void {
-  chrome.tabs.create({ url, active: true }).catch(() => { });
+async function reveal(tab: chrome.tabs.Tab): Promise<void> {
+  await chrome.tabs.update(tab.id, { active: true }).catch(() => {});
+  if (tab.windowId !== undefined) {
+    await chrome.windows.update(tab.windowId, { focused: true }).catch(() => {});
+  }
 }
 
 async function inspect(downloadId: number): Promise<void> {
