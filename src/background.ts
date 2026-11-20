@@ -65,6 +65,7 @@ async function startDownload(url: string, openerTabId: number | undefined): Prom
 
 chrome.tabs.onRemoved.addListener((tabId) => pendingMap.delete(tabId));
 
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg?.type !== MSG_DOWNLOAD) {
     return false;
   }
@@ -72,7 +73,8 @@ chrome.tabs.onRemoved.addListener((tabId) => pendingMap.delete(tabId));
     sendResponse({ ok: false });
     return false;
   }
-  startDownload(createDownloadUrl(msg.fileId, msg.authUser)).catch(() => { });
+  const openerTabId = sender?.tab?.id;
+  startDownload(createDownloadUrl(msg.fileId, msg.authUser), openerTabId).catch(() => {});
   sendResponse({ ok: true });
   return false;
 });
