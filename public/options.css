@@ -7,7 +7,6 @@
   --hover: #f0f4f9;
   --accent: #0b57d0;
   --accent-bg: #d3e3fd;
-  --disabled: #8e918f;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -19,7 +18,6 @@
     --hover: #1e1f20;
     --accent: #a8c7fa;
     --accent-bg: #0842a0;
-    --disabled: #8e918f;
   }
 }
 
@@ -88,15 +86,6 @@ legend {
   outline-offset: 2px;
 }
 
-.opt.is-disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-.opt.is-disabled:hover {
-  background: transparent;
-}
-
 .opt input {
   margin: 3px 0 0;
   accent-color: var(--accent);
@@ -115,10 +104,4 @@ legend {
 .desc {
   color: var(--text-sub);
   font-size: 12px;
-}
-
-.note {
-  color: var(--disabled);
-  font-size: 12px;
-  font-weight: 500;
 }
