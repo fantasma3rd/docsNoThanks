@@ -3,7 +3,7 @@
   "name": "Docs, No Thanks",
   "version": "0.4.0",
   "description": "Google Classroom attachments, downloaded in one click. No ceremonial trip through Docs required.",
-  "permissions": ["storage", "downloads"],
+  "permissions": ["storage"],
   "background": {
     "service_worker": "background.js"
   },
