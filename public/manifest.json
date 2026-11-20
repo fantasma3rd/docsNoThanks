@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Docs, No Thanks",
-  "version": "0.5.0",
+  "version": "1.0.0",
   "description": "Google Classroom attachments, downloaded in one click. No ceremonial trip through Docs required.",
   "permissions": ["storage"],
   "background": {
